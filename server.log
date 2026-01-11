@@ -1,0 +1,129 @@
+$ next dev --turbopack
+   ▲ Next.js 15.5.6 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://169.254.0.21:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1712ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.4s
+ ⨯ ./app/layout.tsx:1:32
+Parsing ecmascript source code failed
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m type { [33mMetadata[39m } [36mfrom[39m [37m[41m[1m\[22m[49m[39m[32m"next\";[39m
+ [90m   |[39m                                [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mPlayfair_Display[39m[33m,[39m [33mInter[39m } [36mfrom[39m [37m[41m[1m\[22m[49m[39m[32m"next/font/google\";[39m
+ [90m 3 |[39m [36mimport[39m [37m[41m[1m\[22m[49m[39m[32m"./globals.css\";[39m
+ [90m 4 |[39m[0m
+
+Unterminated string constant
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.3s
+ GET / 500 in 8039ms
+ ⚠ Cross origin request detected from tough-dodos-drum.lindy.site to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 694ms
+ GET /favicon.ico 500 in 729ms
+Error: Cannot apply unknown utility class `border-border`. Are you using CSS modules or similar and missing `@reference`? https://tailwindcss.com/docs/functions-and-directives#reference-directive
+    [2m[at onInvalidCandidate (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:21:1314)][0m
+    [2m[at Te (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:16:36364)][0m
+    [2m[at /home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:21:355][0m
+    [2m[at Tr (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:3:1718)][0m
+    [2m[at _ (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:3:1377)][0m
+    [2m[at Se (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:21:172)][0m
+    [2m[at ln (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:38:294)][0m
+    [2m[at process.processTicksAndRejections (node:internal/process/task_queues:105:5)][0m
+    [2m[at async sn (/home/code/objekte-site/node_modules/tailwindcss/dist/lib.js:38:631)][0m
+    [2m[at async Qr (/home/code/objekte-site/node_modules/@tailwindcss/node/dist/index.js:10:3385)][0m
+ ⨯ ./app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: /home/code/objekte-site/app/globals.css:1:1: Cannot apply unknown utility class `border-border`. Are you using CSS modules or similar and missing `@reference`? https://tailwindcss.com/docs/functions-and-directives#reference-directive
+    [at Input.error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at Root.error (turbopack:///[project]/node_modules/postcss/lib/node.js:146:32)]
+    [at Object.Once (/home/code/objekte-site/node_modules/@tailwindcss/postcss/dist/index.js:10:6912)]
+    [at process.processTicksAndRejections (node:internal/process/task_queues:105:5)]
+    [at async LazyResult.runAsync (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:293:11)]
+    [at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34)]
+    [at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ GET / 500 in 68ms
+ GET /favicon.ico 500 in 35ms
+ ✓ Compiled in 702ms
+ ✓ Compiled / in 17ms
+ GET / 200 in 733ms
+ GET /favicon.ico?favicon.bf3c9292.ico 200 in 410ms
+ GET / 200 in 188ms
+ ○ Compiling /produit ...
+ ✓ Compiled /produit in 679ms
+ GET /produit 200 in 857ms
+ ○ Compiling /archives ...
+ ✓ Compiled /archives in 840ms
+ GET /archives 200 in 992ms
+ ○ Compiling /a-propos ...
+ ✓ Compiled /a-propos in 789ms
+ GET /a-propos 200 in 946ms
+ ○ Compiling /faq ...
+ ✓ Compiled /faq in 994ms
+ GET /faq 200 in 1370ms
+ GET / 200 in 487ms
+ GET /favicon.ico?favicon.bf3c9292.ico 200 in 291ms
+ GET / 200 in 217ms
+ GET / 200 in 171ms
+ GET / 200 in 151ms
+ GET / 200 in 539ms
+ GET /favicon.ico?favicon.bf3c9292.ico 200 in 304ms
+ GET /a-propos 200 in 155ms
+ GET / 200 in 94ms
+ GET /archives 200 in 88ms
+ GET / 200 in 108ms
+ GET /produit 200 in 100ms
+ GET /produit 200 in 96ms
+ ○ Compiling /paiement ...
+ ✓ Compiled /paiement in 804ms
+ GET /paiement 200 in 927ms
+ GET /paiement 200 in 174ms
+ GET /favicon.ico?favicon.bf3c9292.ico 200 in 277ms
+ GET /paiement 200 in 181ms
+ GET /paiement 200 in 151ms
+ GET /paiement 200 in 144ms
+ GET / 200 in 177ms
+ GET / 200 in 221ms
+ ✓ Compiled in 1222ms
+ ✓ Compiled in 0ms
+ GET / 200 in 301ms
+ GET / 200 in 108ms
+ GET / 200 in 119ms
+ ✓ Compiled in 205ms
+ ✓ Compiled in 240ms
+ GET / 200 in 238ms
+ ✓ Compiled in 190ms
+ ✓ Compiled in 214ms
+ ✓ Compiled in 180ms
+ GET / 200 in 461ms
+ ○ Compiling /politique-confidentialite ...
+ ✓ Compiled /politique-confidentialite in 818ms
+ GET /politique-confidentialite 200 in 937ms
+ GET / 200 in 102ms
+ ✓ Compiled /produit in 45ms
+ GET /produit 200 in 243ms
+ ✓ Compiled /paiement in 38ms
+ GET /paiement 200 in 222ms
+ GET / 200 in 159ms
+ ○ Compiling /cgv ...
+ ✓ Compiled /cgv in 727ms
+ GET /cgv 200 in 832ms
+ GET / 200 in 301ms
+ GET / 200 in 362ms
