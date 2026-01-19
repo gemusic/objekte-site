@@ -13,7 +13,7 @@ interface KkiapayConfig {
 }
 
 interface Window {
-  kkiapay: {
+  kkiapay?: {
     open: (config: KkiapayConfig) => void;
     addSuccessListener: (callback: (response: any) => void) => void;
     addFailedListener: (callback: (error: any) => void) => void;
