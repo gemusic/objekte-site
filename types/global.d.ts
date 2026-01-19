@@ -1,4 +1,3 @@
-// types/global.d.ts
 interface KkiapayConfig {
   amount: string;
   key: string;
@@ -10,6 +9,7 @@ interface KkiapayConfig {
   name?: string;
   email?: string;
   phone?: string;
+  data?: string;
 }
 
 interface Window {
