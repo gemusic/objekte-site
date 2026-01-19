@@ -3,7 +3,15 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useState, useEffect } from "react";
-import Script from "next/script";
+
+// Solution alternative : Utiliser l'API officielle KKiaPay
+declare global {
+  interface Window {
+    kkiapay: any;
+    openKkiapayWidget?: (config: any) => void;
+    _kkiapayLoaded?: boolean;
+  }
+}
 
 export default function CheckoutPage() {
   const [formData, setFormData] = useState({
@@ -13,40 +21,71 @@ export default function CheckoutPage() {
     address: "",
   });
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isKkiapayLoaded, setIsKkiapayLoaded] = useState(false);
+  const [kkiapayReady, setKkiapayReady] = useState(false);
 
-  // Vérifier si KKiaPay est chargé
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.kkiapay) {
-      setIsKkiapayLoaded(true);
+    // Vérifier si KKiaPay est déjà chargé
+    const checkKKiaPay = () => {
+      if (typeof window !== 'undefined' && (window.kkiapay || window.openKkiapayWidget)) {
+        console.log('✅ KKiaPay détecté');
+        setKkiapayReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    // Écouter l'événement de chargement
+    const handleKKiaPayLoaded = () => {
+      console.log('📢 Événement kkiapay:loaded reçu');
+      setKkiapayReady(true);
+    };
+
+    // Vérifier immédiatement
+    if (checkKKiaPay()) {
+      return;
     }
+
+    // Écouter l'événement personnalisé
+    window.addEventListener('kkiapay:loaded', handleKKiaPayLoaded);
+
+    // Vérifier périodiquement
+    const interval = setInterval(() => {
+      if (checkKKiaPay()) {
+        clearInterval(interval);
+      }
+    }, 500);
+
+    // Nettoyer
+    return () => {
+      window.removeEventListener('kkiapay:loaded', handleKKiaPayLoaded);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Vérifier que tous les champs sont remplis
     if (!formData.email || !formData.fullName || !formData.phone || !formData.address) {
       alert("Veuillez remplir tous les champs du formulaire.");
+      return;
+    }
+
+    // Vérifier que KKiaPay est prêt
+    if (!kkiapayReady) {
+      alert("Le système de paiement est en cours de chargement. Veuillez patienter quelques secondes puis réessayer.");
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // 1. Envoyer l'email avec les informations de commande
-      console.log("Envoi de l'email...");
+      // 1. Envoyer l'email
+      console.log("📧 Envoi de l'email...");
       await sendOrderEmail(formData);
-      console.log("Email envoyé avec succès");
-      
-      // 2. Vérifier que KKiaPay est chargé
-      if (typeof window === 'undefined' || !window.kkiapay) {
-        throw new Error("KKiaPay n'est pas chargé. Veuillez réessayer.");
-      }
-      
-      // 3. Ouvrir le widget KKiaPay
-      console.log("Ouverture du widget KKiaPay...");
-      window.kkiapay.open({
+      console.log("✅ Email envoyé");
+
+      // 2. Préparer la configuration KKiaPay
+      const kkiapayConfig = {
         amount: "14500",
         key: "8d810e82c04368c5d2c7592b1ac9d71095a51a05",
         callback: `${window.location.origin}/confirmation`,
@@ -57,24 +96,60 @@ export default function CheckoutPage() {
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-      });
+        data: JSON.stringify({
+          produit: "Objet n°01 - Le Purificateur Haute Précision",
+          prix: "14500 FCFA",
+          adresse: formData.address
+        })
+      };
 
-      // 4. Ajouter les listeners
-      window.kkiapay.addSuccessListener((response) => {
-        console.log("Paiement réussi:", response);
-        // Rediriger vers la page de confirmation
-        window.location.href = "/confirmation";
-      });
+      console.log("🎯 Configuration KKiaPay:", kkiapayConfig);
 
-      window.kkiapay.addFailedListener((error) => {
-        console.error("Paiement échoué:", error);
-        alert("Le paiement a échoué. Veuillez réessayer.");
-        setIsProcessing(false);
-      });
+      // 3. Essayer différentes méthodes pour ouvrir KKiaPay
+      if (window.kkiapay && typeof window.kkiapay.open === 'function') {
+        console.log("🔧 Utilisation de window.kkiapay.open()");
+        window.kkiapay.open(kkiapayConfig);
+        
+        // Ajouter les listeners
+        if (window.kkiapay.addSuccessListener) {
+          window.kkiapay.addSuccessListener((response: any) => {
+            console.log("✅ Paiement réussi:", response);
+            window.location.href = "/confirmation";
+          });
+        }
+        
+        if (window.kkiapay.addFailedListener) {
+          window.kkiapay.addFailedListener((error: any) => {
+            console.error("❌ Paiement échoué:", error);
+            alert("Le paiement a échoué. Veuillez réessayer.");
+            setIsProcessing(false);
+          });
+        }
+      } 
+      else if (window.openKkiapayWidget && typeof window.openKkiapayWidget === 'function') {
+        console.log("🔧 Utilisation de window.openKkiapayWidget()");
+        window.openKkiapayWidget(kkiapayConfig);
+      }
+      else if (typeof kkiapay !== 'undefined' && kkiapay.open) {
+        console.log("🔧 Utilisation de kkiapay.open()");
+        kkiapay.open(kkiapayConfig);
+      }
+      else {
+        throw new Error("Aucune méthode KKiaPay disponible");
+      }
 
     } catch (error: any) {
-      console.error("Erreur:", error);
-      alert(`Erreur: ${error.message || "Une erreur est survenue. Veuillez réessayer."}`);
+      console.error("❌ Erreur:", error);
+      
+      // Si KKiaPay échoue, rediriger vers une URL de secours
+      const errorMessage = error.message || "Une erreur est survenue";
+      
+      if (errorMessage.includes("KKiaPay") || errorMessage.includes("paiement")) {
+        alert(`Erreur de paiement: ${errorMessage}. Essayez de recharger la page.`);
+      } else {
+        alert(`Erreur: ${errorMessage}`);
+      }
+      
       setIsProcessing(false);
     }
   };
@@ -103,9 +178,7 @@ export default function CheckoutPage() {
 
     const response = await fetch("/api/send-order-email", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(emailData),
     });
 
@@ -119,20 +192,6 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen flex flex-col">
       <Header />
-      
-      {/* Script KKiaPay chargé uniquement sur cette page */}
-      <Script
-        src="https://cdn.kkiapay.me/k.js"
-        strategy="lazyOnload"
-        onLoad={() => {
-          console.log("KKiaPay script chargé avec succès");
-          setIsKkiapayLoaded(true);
-        }}
-        onError={() => {
-          console.error("Erreur de chargement du script KKiaPay");
-          setIsKkiapayLoaded(false);
-        }}
-      />
 
       <section className="pt-32 md:pt-48 pb-20 md:pb-32 px-6">
         <div className="max-w-5xl mx-auto">
@@ -149,7 +208,7 @@ export default function CheckoutPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-10 md:space-y-12">
-                {/* 1. VOS COORDONNÉES */}
+                {/* Coordonnées */}
                 <div className="space-y-6 md:space-y-8">
                   <h2 className="text-[10px] uppercase tracking-[0.2em] border-b border-[#E1E1E1] pb-4">
                     1. Vos Coordonnées
@@ -174,7 +233,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* 2. INFORMATIONS DE LIVRAISON */}
+                {/* Livraison */}
                 <div className="space-y-6 md:space-y-8">
                   <h2 className="text-[10px] uppercase tracking-[0.2em] border-b border-[#E1E1E1] pb-4">
                     2. Informations de Livraison
@@ -228,7 +287,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* 3. MODE DE PAIEMENT */}
+                {/* Paiement */}
                 <div className="space-y-6 md:space-y-8">
                   <h2 className="text-[10px] uppercase tracking-[0.2em] border-b border-[#E1E1E1] pb-4">
                     3. Mode de Paiement
@@ -255,18 +314,23 @@ export default function CheckoutPage() {
                 <div className="pt-6 md:pt-8 space-y-6">
                   <button
                     type="submit"
-                    disabled={isProcessing || !isKkiapayLoaded}
+                    disabled={isProcessing || !kkiapayReady}
                     className={`w-full bg-[#1A1A1A] text-white px-12 py-6 text-[10px] md:text-xs uppercase tracking-[0.2em] transition-colors ${
-                      isProcessing || !isKkiapayLoaded ? "opacity-50 cursor-not-allowed" : "hover:bg-black"
+                      isProcessing || !kkiapayReady ? "opacity-50 cursor-not-allowed" : "hover:bg-black"
                     }`}
                   >
                     {isProcessing ? "Traitement en cours..." : "Payer 14 500 FCFA"}
                   </button>
                   
-                  {!isKkiapayLoaded && (
-                    <p className="text-center text-[9px] md:text-[10px] text-amber-600 italic">
-                      Chargement du système de paiement en cours...
-                    </p>
+                  {!kkiapayReady && (
+                    <div className="text-center space-y-2">
+                      <p className="text-[9px] md:text-[10px] text-amber-600 italic animate-pulse">
+                        ⏳ Chargement du système de paiement...
+                      </p>
+                      <p className="text-[8px] text-muted-foreground">
+                        Si le chargement prend trop de temps, rechargez la page.
+                      </p>
+                    </div>
                   )}
                   
                   <p className="text-center text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
