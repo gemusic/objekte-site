@@ -5,16 +5,6 @@ import { Footer } from "@/components/layout/Footer";
 import { useState, useEffect } from "react";
 import Script from "next/script";
 
-declare global {
-  interface Window {
-    kkiapay?: {
-      open: (config: any) => void;
-      addSuccessListener: (callback: (response: any) => void) => void;
-      addFailedListener: (callback: (error: any) => void) => void;
-    };
-  }
-}
-
 export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     email: "",
