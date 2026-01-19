@@ -29,7 +29,7 @@ export default function ConfirmationPage() {
             </span>
             <h1 className="text-3xl md:text-4xl font-playfair leading-tight">Merci pour votre confiance.</h1>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed px-4">
-              Votre paiement de 14 000 FCFA a été reçu avec succès. Vous avez choisi d'investir dans votre santé et votre confort quotidien.
+              Votre paiement de 14 500 FCFA a été reçu avec succès. Vous avez choisi d'investir dans votre santé et votre confort quotidien.
             </p>
           </div>
 
@@ -51,7 +51,15 @@ export default function ConfirmationPage() {
 
           <div className="space-y-8 px-4">
             <p className="text-xs md:text-sm text-muted-foreground">
-              Pour toute question urgente, notre concierge est disponible sur WhatsApp : <span className="text-foreground font-medium">[Ton Numéro]</span>
+              Pour toute question urgente, contactez notre{" "}
+              <a
+                href="https://wa.me/22996991128"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium underline hover:opacity-60 transition-opacity"
+              >
+                Service Client
+              </a>
             </p>
             <Link
               href="/"
