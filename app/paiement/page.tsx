@@ -5,6 +5,14 @@ import { Footer } from "@/components/layout/Footer";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+declare global {
+  interface Window {
+    openKkiapayWidget: (config: any) => void;
+    addSuccessListener: (callback: (response: any) => void) => void;
+    addFailedListener: (callback: (error: any) => void) => void;
+  }
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -20,33 +28,56 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // 1. Envoyer les informations par email
+      // 1. Envoyer l'email avec les informations de commande
       await sendOrderEmail(formData);
       
-      // 2. Ouvrir le widget KKiaPay pour le paiement
-      openKkiapayWidget({
-        amount: "14500",
-        key: "8d810e82c04368c5d2c7592b1ac9d71095a51a05",
-        callback: `${window.location.origin}/confirmation`,
-        sandbox: false,
-        paymentmethod: "momo",
-        theme: "#1A1A1A",
-        position: "center",
-        name: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-      });
+      // 2. Ouvrir le widget KKiaPay
+      if (typeof window !== 'undefined' && window.openKkiapayWidget) {
+        window.openKkiapayWidget({
+          amount: "14500",
+          key: "8d810e82c04368c5d2c7592b1ac9d71095a51a05",
+          callback: `${window.location.origin}/confirmation`,
+          sandbox: false,
+          paymentmethod: "momo",
+          theme: "#1A1A1A",
+          position: "center",
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+        });
 
+        // Ajouter les listeners pour le succès/échec
+        if (window.addSuccessListener) {
+          window.addSuccessListener((response) => {
+            console.log("Paiement réussi:", response);
+            // Le paiement est réussi, rediriger vers la confirmation
+            router.push("/confirmation");
+          });
+        }
+
+        if (window.addFailedListener) {
+          window.addFailedListener((error) => {
+            console.error("Paiement échoué:", error);
+            alert("Le paiement a échoué. Veuillez réessayer.");
+            setIsProcessing(false);
+          });
+        }
+      } else {
+        alert("Le système de paiement n'est pas disponible. Veuillez réessayer plus tard.");
+        setIsProcessing(false);
+      }
     } catch (error) {
-      console.error("Erreur lors du traitement:", error);
+      console.error("Erreur:", error);
+      alert("Une erreur est survenue. Veuillez réessayer.");
       setIsProcessing(false);
     }
   };
 
   const sendOrderEmail = async (data: typeof formData) => {
     const emailData = {
+      to: "gerernoscommandes@gmail.com",
       subject: `NOUVELLE COMMANDE objekté - ${data.fullName}`,
-      content: `
+      text: `
         NOUVELLE COMMANDE objekté
         --------------------------
         Client : ${data.fullName}
@@ -61,17 +92,42 @@ export default function CheckoutPage() {
         
         --------------------------
         Action requise : Préparer la livraison et contacter le client.
+      `,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1A1A1A; border-bottom: 1px solid #E1E1E1; padding-bottom: 10px;">
+            🚀 NOUVELLE COMMANDE objekté
+          </h2>
+          <div style="background-color: #F5F2ED; padding: 20px; border-radius: 4px; margin: 20px 0;">
+            <h3 style="color: #1A1A1A; margin-top: 0;">Informations client</h3>
+            <p><strong>Nom :</strong> ${data.fullName}</p>
+            <p><strong>Email :</strong> ${data.email}</p>
+            <p><strong>Téléphone :</strong> ${data.phone}</p>
+            <p><strong>Adresse :</strong> ${data.address}</p>
+            
+            <h3 style="color: #1A1A1A; margin-top: 20px;">Produit commandé</h3>
+            <p><strong>Produit :</strong> Objet n°01 - Le Purificateur Haute Précision</p>
+            <p><strong>Prix :</strong> 14 500 FCFA</p>
+          </div>
+          <p style="color: #666666; font-size: 12px;">
+            ⏰ Action requise : Préparer la livraison et contacter le client.
+          </p>
+        </div>
       `
     };
 
-    // Envoi à l'API (remplace par ton endpoint)
+    // Envoi à l'API
     const response = await fetch("/api/send-order-email", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(emailData),
     });
 
-    if (!response.ok) throw new Error("Erreur lors de l'envoi de l'email");
+    if (!response.ok) {
+      throw new Error("Erreur lors de l'envoi de l'email");
+    }
   };
 
   return (
@@ -81,7 +137,7 @@ export default function CheckoutPage() {
       <section className="pt-32 md:pt-48 pb-20 md:pb-32 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24">
-            {/* Form */}
+            {/* Formulaire */}
             <div className="space-y-12 md:space-y-16 order-2 lg:order-1">
               <div>
                 <h1 className="text-3xl md:text-4xl font-playfair mb-4 leading-tight">
@@ -215,7 +271,7 @@ export default function CheckoutPage() {
               </form>
             </div>
 
-            {/* Summary */}
+            {/* Récapitulatif */}
             <div className="lg:sticky lg:top-48 h-fit space-y-8 md:space-y-12 order-1 lg:order-2">
               <div className="bg-white p-8 md:p-12 rounded-sm space-y-6 md:space-y-8">
                 <h2 className="text-[10px] uppercase tracking-[0.2em] border-b border-[#E1E1E1] pb-4">
