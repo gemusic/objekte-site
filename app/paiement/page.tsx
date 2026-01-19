@@ -3,18 +3,8 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-declare global {
-  interface Window {
-    openKkiapayWidget: (config: any) => void;
-    addSuccessListener: (callback: (response: any) => void) => void;
-    addFailedListener: (callback: (error: any) => void) => void;
-  }
-}
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     fullName: "",
@@ -32,8 +22,8 @@ export default function CheckoutPage() {
       await sendOrderEmail(formData);
       
       // 2. Ouvrir le widget KKiaPay
-      if (typeof window !== 'undefined' && window.openKkiapayWidget) {
-        window.openKkiapayWidget({
+      if (typeof window !== 'undefined' && window.kkiapay) {
+        window.kkiapay.open({
           amount: "14500",
           key: "8d810e82c04368c5d2c7592b1ac9d71095a51a05",
           callback: `${window.location.origin}/confirmation`,
@@ -46,22 +36,18 @@ export default function CheckoutPage() {
           phone: formData.phone,
         });
 
-        // Ajouter les listeners pour le succès/échec
-        if (window.addSuccessListener) {
-          window.addSuccessListener((response) => {
-            console.log("Paiement réussi:", response);
-            // Le paiement est réussi, rediriger vers la confirmation
-            router.push("/confirmation");
-          });
-        }
+        // Écouter le succès
+        window.kkiapay.addSuccessListener((response) => {
+          console.log("Paiement réussi:", response);
+          window.location.href = "/confirmation";
+        });
 
-        if (window.addFailedListener) {
-          window.addFailedListener((error) => {
-            console.error("Paiement échoué:", error);
-            alert("Le paiement a échoué. Veuillez réessayer.");
-            setIsProcessing(false);
-          });
-        }
+        // Écouter l'échec
+        window.kkiapay.addFailedListener((error) => {
+          console.error("Paiement échoué:", error);
+          alert("Le paiement a échoué. Veuillez réessayer.");
+          setIsProcessing(false);
+        });
       } else {
         alert("Le système de paiement n'est pas disponible. Veuillez réessayer plus tard.");
         setIsProcessing(false);
@@ -116,7 +102,6 @@ export default function CheckoutPage() {
       `
     };
 
-    // Envoi à l'API
     const response = await fetch("/api/send-order-email", {
       method: "POST",
       headers: {
