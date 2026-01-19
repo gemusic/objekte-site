@@ -26,20 +26,17 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // 1. Envoyer l'email
+      // 1. Envoyer l'email avec les informations de commande
+      console.log("Envoi de l'email...");
       await sendOrderEmail(formData);
+      console.log("Email envoyé avec succès");
       
-      // 2. Stocker les données pour la page KKiaPay (dans localStorage)
-      localStorage.setItem('kkiapay_order_data', JSON.stringify({
-        name: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address
-      }));
+      // 2. Stocker les données dans sessionStorage
+      sessionStorage.setItem("objekte_payment_data", JSON.stringify(formData));
       
       // 3. Rediriger vers la page de paiement KKiaPay
-      router.push('/kkiapay-paiement');
-      
+      router.push("/kkiapay-paiement");
+
     } catch (error: any) {
       console.error("Erreur:", error);
       alert(`Erreur: ${error.message || "Une erreur est survenue. Veuillez réessayer."}`);
